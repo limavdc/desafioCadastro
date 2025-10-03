@@ -104,7 +104,7 @@ Neste momento, você deverá ler as **PERGUNTAS** do arquivo `formulario.txt` e 
 10. Nas perguntas sobre NOME, RAÇA, PESO, IDADE e ENDEREÇO (somente o campo número), caso o usuário NÃO INFORME ou deixe em branco, você deverá preencher com NÃO INFORMADO (deve ser uma constante)!
 
 
-## 📍Passo 4: Armazenamento em Arquivo 📂
+## 📍Passo 4: Armazenamento em application.Arquivo 📂
 Agora, ao salvar o PET em um objeto, você deverá salvar as respostas em um arquivo `.txt` com o nome formatado da seguinte maneira: 
 
 `20231101T1234-FLORZINHADASILVA.TXT`.
