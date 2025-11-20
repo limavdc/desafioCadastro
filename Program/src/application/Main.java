@@ -43,12 +43,17 @@ public class Main {
                         Pet novoPet = petService.cadastrarNovoPet();
                         System.out.println("\n✅ Pet cadastrado com sucesso:");
                         System.out.println(novoPet);
+
+                        PetService.salvarPetEmArquivo(novoPet);
+                        System.out.println("📁 Arquivo salvo com sucesso!");
+
                     } catch (Exception e) {
                         System.err.println(" Erro ao cadastrar o pet: " + e.getMessage());
                     }
                     break;
                 case 2:
                     System.out.println("Alterar os dados do pet");
+                   // Pet alterarPet = petService.buscarPets();
                     break;
                 case 3:
                     System.out.println("Qual tipo do pet");
