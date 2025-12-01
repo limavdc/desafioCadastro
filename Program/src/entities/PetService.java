@@ -227,7 +227,7 @@ public class PetService {
 
     public static String gerarNomeArquivo(Pet pet) {
         LocalDateTime agora = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
         String formatoCompacto = agora.format(formatter);
 
         String nomePet = stripAccents(
@@ -244,10 +244,13 @@ public class PetService {
     }
 
 
+
+
+
     // PASSO 5
 
-    public void buscarPets() {
-        TipoPet tipoEscolhido;
+    public List<Pet> buscarPets() throws IOException {
+        TipoPet tipoEscolhido = null;
         while (true) {
             String tipoPet = sc.nextLine();
             try {
@@ -260,8 +263,766 @@ public class PetService {
             }
         }
 
+        List<Pet> todosPets = carregarPetsDoDiretorio();
 
+        List<Pet> listaFiltrada = new ArrayList<>();
+        for(Pet pet : todosPets) {
+            if(pet.getTipoPet().equals(tipoEscolhido)) {
+                listaFiltrada.add(pet);
+            }
+        }
+
+        Integer condicao = criterioBusca();
+        List<Pet> resultados = null;
+        switch(condicao) {
+            case 1:
+                resultados = buscarPorNome(listaFiltrada);
+                break;
+
+            case 2:
+                resultados = buscarPorSexo(listaFiltrada);
+                break;
+
+            case 3:
+                resultados = buscarPorIdade(listaFiltrada);
+                break;
+
+            case 4:
+                resultados = buscarPorPeso(listaFiltrada);
+                break;
+
+            case 5:
+                resultados = buscarPorRaca(listaFiltrada);
+                break;
+
+            case 6:
+                resultados = buscarPorEndereco(listaFiltrada);
+                break;
+
+            case 7:
+                 resultados = buscarPorNomeEIdade(listaFiltrada);
+                break;
+
+            case 8:
+                resultados = buscarPorIdadeEPeso(listaFiltrada);
+                break;
+            case 9:
+                resultados = buscarPorNomeEPeso(listaFiltrada);
+                break;
+            case 10:
+                resultados = buscarPorSexoEIdade(listaFiltrada);
+                break;
+            case 11:
+                resultados = buscarPorNomeEEndereco(listaFiltrada);
+                break;
+            case 12:
+                resultados = buscarPorPesoEEndereco(listaFiltrada);
+                break;
+
+            default:
+                System.out.println("Opção inválida.");
+                return new ArrayList<>();
+
+
+        }
+
+        imprimirResultados(resultados, "nome" );
+
+        return resultados;
     }
+
+    private List<Pet> buscarPorNome(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual nome do pet?");
+        String nomeProcurado = sc.nextLine();
+        nomeProcurado = unaccent(nomeProcurado).toLowerCase();
+
+
+        for(Pet petAtual : lista) {
+            String nomePetFormalizado = unaccent(petAtual.getName()).toLowerCase();
+            if(nomePetFormalizado.contains(nomeProcurado) ) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorSexo(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual sexo do pet?");
+        String tipoSexoInformado = sc.nextLine();
+
+
+        TipoSexo sexoConvertido;
+
+        try {
+           sexoConvertido = TipoSexo.valueOf(tipoSexoInformado.toUpperCase());
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Sexo do pet inválido digite novamente");
+            return resultados;
+        }
+
+        for(Pet petAtual : lista) {
+            if(petAtual.getTipoSexo().equals(sexoConvertido)) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorIdade(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual idade do Pet?");
+
+        Double idadeInformada;
+
+        try {
+            idadeInformada = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Entrada inválida! Digite apenas números.");
+            return resultados;
+        }
+
+        if (idadeInformada > 0 && idadeInformada < 1) {
+            // idade entre 0 e 1 ano → meses já convertidos
+            // nada a fazer
+        }
+        else if (idadeInformada < 12) {
+            System.out.println("Convertendo " + idadeInformada + " meses para anos...");
+            idadeInformada = idadeInformada / 12.0;
+        }
+        else if (idadeInformada > IDADE_MAXIMA) {
+            System.err.println("Idade acima do permitido!");
+            return resultados;
+        }
+
+        for(Pet petAtual : lista) {
+            Double idadePet = petAtual.getIdade();
+            if (Math.abs(idadePet - idadeInformada) < 0.01){
+                resultados.add(petAtual);
+            }
+
+        }
+
+        return resultados;
+    }
+
+
+    private List<Pet> buscarPorPeso(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual peso do Pet?");
+
+        Double pesoSelecionado;
+
+        try {
+            pesoSelecionado = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Peso inválido! Digite novamente.");
+            return resultados;
+        }
+
+        if (pesoSelecionado < PESO_MINIMO || pesoSelecionado > PESO_MAXIMO) {
+            System.err.println("Peso fora do intervalo permitido!");
+            return resultados;
+        }
+
+
+        for(Pet petAtual : lista) {
+            Double pesoPet = petAtual.getPeso();
+            if(pesoPet.equals(pesoSelecionado)) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorRaca(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+
+        System.out.println("Qual raca do pet?");
+        String racaProcurado = sc.nextLine();
+        racaProcurado = unaccent(racaProcurado).toLowerCase();
+
+
+        for(Pet petAtual : lista) {
+            String racaPetFormalizado = unaccent(petAtual.getRaca()).toLowerCase();
+            if(racaPetFormalizado.contains(racaProcurado) ) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorEndereco(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual campo sera buscado: ");
+
+        System.out.println("1 - Rua ");
+
+        System.out.println("2 - Número ");
+
+        System.out.println("3 - Cidade ");
+
+        System.out.println("4 - Rua + Número + Cidade ");
+
+
+
+        Integer opcao = Integer.parseInt(sc.nextLine());
+
+        String ruaInformada = "";
+        Integer numeroInformado = null;
+        String cidadeInformada = "";
+
+
+        switch (opcao) {
+            case 1:
+                System.out.println("Digite a rua:");
+                ruaInformada = sc.nextLine();
+                break;
+
+            case 2:
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine(); // limpar buffer
+                break;
+
+            case 3:
+                System.out.println("Digite a cidade:");
+                cidadeInformada = sc.nextLine();
+                break;
+
+            case 4:
+                System.out.println("Digite a rua:");
+                ruaInformada = sc.nextLine();
+
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine();
+
+                System.out.println("Digite a cidade:");
+                cidadeInformada = sc.nextLine();
+                break;
+
+            default:
+                System.out.println("Opção inválida.");
+                return resultados;
+        }
+
+        for (Pet petAtual : lista) {
+
+            Endereco end = petAtual.getEndereco();
+
+            if (end == null) continue;
+
+            String rua = unaccent(end.getRua()).toLowerCase();
+            Integer numero = end.getNumero();
+            String cidade = unaccent(end.getCidade()).toLowerCase();
+
+            switch (opcao) {
+
+                case 1:
+                    if (rua.contains(ruaInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 2:
+                    if (numero.equals(numeroInformado)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 3:
+                    if (cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 4:
+                    if (rua.contains(ruaInformada)
+                            && numero.equals(numeroInformado)
+                            && cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorNomeEIdade(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual nome do pet?");
+        String nomeProcurado = sc.nextLine();
+        nomeProcurado = unaccent(nomeProcurado).toLowerCase();
+        System.out.println("Qual idade do Pet?");
+
+        Double idadeInformada;
+
+        try {
+            idadeInformada = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Entrada inválida! Digite apenas números.");
+            return resultados;
+        }
+
+        if (idadeInformada > 0 && idadeInformada < 1) {
+            // idade entre 0 e 1 ano → meses já convertidos
+            // nada a fazer
+        }
+        else if (idadeInformada < 12) {
+            System.out.println("Convertendo " + idadeInformada + " meses para anos...");
+            idadeInformada = idadeInformada / 12.0;
+        }
+        else if (idadeInformada > IDADE_MAXIMA) {
+            System.err.println("Idade acima do permitido!");
+            return resultados;
+        }
+
+        for (Pet petAtual : lista) {
+
+            String nomePetFormalizado = unaccent(petAtual.getName()).toLowerCase();
+            Double idadePet = petAtual.getIdade();
+            if(nomePetFormalizado.contains(nomeProcurado) && Math.abs(idadePet - idadeInformada) < 0.01) {
+                resultados.add(petAtual);
+            }
+
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorIdadeEPeso(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        // IDADE
+        System.out.println("Qual idade do pet?");
+        Double idadeInformada;
+
+        try {
+            idadeInformada = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Idade inválida.");
+            return resultados;
+        }
+
+        if (idadeInformada < 12) {
+            idadeInformada = idadeInformada / 12.0;
+        } else if (idadeInformada > IDADE_MAXIMA) {
+            System.err.println("Idade acima do permitido.");
+            return resultados;
+        }
+
+        // PESO
+        System.out.println("Qual peso do pet?");
+        Double pesoInformado;
+        try {
+            pesoInformado = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Peso inválido.");
+            return resultados;
+        }
+
+        for (Pet petAtual : lista) {
+
+            Double idade = petAtual.getIdade();
+            Double peso = petAtual.getPeso();
+
+            boolean idadeOK = Math.abs(idade - idadeInformada) < 0.01;
+            boolean pesoOK  = Math.abs(peso - pesoInformado) < 0.01;
+
+            if (idadeOK && pesoOK) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorNomeEPeso(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual nome do pet?");
+        String nomeProcurado = sc.nextLine();
+        nomeProcurado = unaccent(nomeProcurado).toLowerCase();
+
+        System.out.println("Qual peso do pet?");
+        Double pesoInformado;
+        try {
+            pesoInformado = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Peso inválido.");
+            return resultados;
+        }
+
+        for (Pet petAtual : lista) {
+
+            String nomePetFormalizado = unaccent(petAtual.getName()).toLowerCase();
+            Double peso = petAtual.getPeso();
+
+            boolean nomeOK = nomePetFormalizado.contains(nomeProcurado);
+            boolean pesoOK = Math.abs(peso - pesoInformado) < 0.01;
+
+            if (nomeOK && pesoOK) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorSexoEIdade(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual sexo do pet?");
+        String tipoSexoInformado = sc.nextLine();
+
+
+        TipoSexo sexoConvertido;
+
+        try {
+            sexoConvertido = TipoSexo.valueOf(tipoSexoInformado.toUpperCase());
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Sexo do pet inválido digite novamente");
+            return resultados;
+        }
+
+
+        System.out.println("Qual idade do pet?");
+        Double idadeInformada;
+
+        try {
+            idadeInformada = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Idade inválida.");
+            return resultados;
+        }
+
+        if (idadeInformada < 12) {
+            idadeInformada = idadeInformada / 12.0;
+        } else if (idadeInformada > IDADE_MAXIMA) {
+            System.err.println("Idade acima do permitido.");
+            return resultados;
+        }
+
+        for (Pet petAtual : lista) {
+
+            Double idade = petAtual.getIdade();
+
+            boolean idadeOK = Math.abs(idade - idadeInformada) < 0.01;
+            boolean sexoOK = petAtual.getTipoSexo().equals(sexoConvertido);
+
+            if(sexoOK && idadeOK) {
+                resultados.add(petAtual);
+            }
+        }
+
+        return resultados;
+    }
+
+    private List<Pet> buscarPorNomeEEndereco(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual nome do pet?");
+        String nomeProcurado = sc.nextLine();
+        nomeProcurado = unaccent(nomeProcurado).toLowerCase();
+
+        System.out.println("Qual campo será buscado:");
+        System.out.println("1 - Rua");
+        System.out.println("2 - Número");
+        System.out.println("3 - Cidade");
+        System.out.println("4 - Rua + Número + Cidade");
+
+        Integer opcao = Integer.parseInt(sc.nextLine());
+
+        String ruaInformada = "";
+        Integer numeroInformado = null;
+        String cidadeInformada = "";
+
+
+        // Entrada do usuário
+        switch (opcao) {
+            case 1:
+                System.out.println("Digite a rua:");
+                ruaInformada = sc.nextLine();
+                ruaInformada = unaccent(ruaInformada).toLowerCase();
+                break;
+
+            case 2:
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine();
+                break;
+
+            case 3:
+                System.out.println("Digite a cidade:");
+                cidadeInformada = sc.nextLine();
+                cidadeInformada = unaccent(cidadeInformada).toLowerCase();
+                break;
+
+            case 4:
+                System.out.println("Digite a rua:");
+                ruaInformada = sc.nextLine();
+                ruaInformada = unaccent(ruaInformada).toLowerCase();
+
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine();
+
+                System.out.println("Digite a cidade:");
+                cidadeInformada = sc.nextLine();
+                cidadeInformada = unaccent(cidadeInformada).toLowerCase();
+                break;
+
+            default:
+                System.out.println("Opção inválida.");
+                return resultados;
+        }
+
+
+        // PROCESSO DE FILTRAGEM
+        for (Pet petAtual : lista) {
+
+            String nomePetFormalizado = unaccent(petAtual.getName()).toLowerCase();
+
+            // Nome SEMPRE deve bater
+            if (!nomePetFormalizado.contains(nomeProcurado)) {
+                continue;
+            }
+
+            Endereco end = petAtual.getEndereco();
+            if (end == null) continue;
+
+            String rua = unaccent(end.getRua()).toLowerCase();
+            Integer numero = end.getNumero();
+            String cidade = unaccent(end.getCidade()).toLowerCase();
+
+
+            switch (opcao) {
+
+                case 1:
+                    if (rua.contains(ruaInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 2:
+                    if (numero.equals(numeroInformado)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 3:
+                    if (cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 4:
+                    if (rua.contains(ruaInformada)
+                            && numero.equals(numeroInformado)
+                            && cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+            }
+        }
+
+        return resultados;
+    }
+
+
+    private List<Pet> buscarPorPesoEEndereco(List<Pet> lista) {
+
+        List<Pet> resultados = new ArrayList<>();
+
+        System.out.println("Qual peso do pet?");
+        Double pesoInformado;
+
+        try {
+            pesoInformado = Double.parseDouble(sc.nextLine().replace(",", "."));
+        } catch (NumberFormatException e) {
+            System.err.println("Peso inválido!");
+            return resultados;
+        }
+
+        System.out.println("Qual campo será buscado:");
+        System.out.println("1 - Rua");
+        System.out.println("2 - Número");
+        System.out.println("3 - Cidade");
+        System.out.println("4 - Rua + Número + Cidade");
+
+        Integer opcao = Integer.parseInt(sc.nextLine());
+
+        String ruaInformada = "";
+        Integer numeroInformado = null;
+        String cidadeInformada = "";
+
+
+        // Entrada do usuário
+        switch (opcao) {
+
+            case 1:
+                System.out.println("Digite a rua:");
+                ruaInformada = unaccent(sc.nextLine()).toLowerCase();
+                break;
+
+            case 2:
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine();
+                break;
+
+            case 3:
+                System.out.println("Digite a cidade:");
+                cidadeInformada = unaccent(sc.nextLine()).toLowerCase();
+                break;
+
+            case 4:
+                System.out.println("Digite a rua:");
+                ruaInformada = unaccent(sc.nextLine()).toLowerCase();
+
+                System.out.println("Digite o número:");
+                numeroInformado = sc.nextInt();
+                sc.nextLine();
+
+                System.out.println("Digite a cidade:");
+                cidadeInformada = unaccent(sc.nextLine()).toLowerCase();
+                break;
+
+            default:
+                System.out.println("Opção inválida.");
+                return resultados;
+        }
+
+
+        // PROCESSO DE FILTRAGEM
+        for (Pet petAtual : lista) {
+
+            Double pesoPet = petAtual.getPeso();
+            boolean pesoOK = Math.abs(pesoPet - pesoInformado) < 0.01;
+
+            if (!pesoOK) continue;
+
+            Endereco end = petAtual.getEndereco();
+            if (end == null) continue;
+
+            String rua = unaccent(end.getRua()).toLowerCase();
+            Integer numero = end.getNumero();
+            String cidade = unaccent(end.getCidade()).toLowerCase();
+
+
+            switch (opcao) {
+
+                case 1:
+                    if (rua.contains(ruaInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 2:
+                    if (numeroInformado != null && numero.equals(numeroInformado)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 3:
+                    if (cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+
+                case 4:
+                    if (rua.contains(ruaInformada)
+                            && numeroInformado != null && numero.equals(numeroInformado)
+                            && cidade.contains(cidadeInformada)) {
+                        resultados.add(petAtual);
+                    }
+                    break;
+            }
+        }
+
+        return resultados;
+    }
+
+
+    private void imprimirResultados(List<Pet> resultados, String imprimirResultado) {
+
+        if (resultados == null || resultados.isEmpty()) {
+            System.out.println("Nenhum pet encontrado.");
+            return;
+        }
+
+        for (int i = 0; i < resultados.size(); i++) {
+
+            Pet petAtual = resultados.get(i);
+
+            // Proteção contra null
+            String nome   = petAtual.getName() == null ? "" : petAtual.getName();
+            TipoSexo sexo = petAtual.getTipoSexo();
+            Double idade  = petAtual.getIdade() == null ? 0.0 : petAtual.getIdade();
+            Double peso   = petAtual.getPeso() == null ? 0.0 : petAtual.getPeso();
+            String raca   = petAtual.getRaca() == null ? "" : petAtual.getRaca();
+
+            Endereco end = petAtual.getEndereco();
+
+            String rua = "";
+            Integer numero = 0;
+            String cidade = "";
+
+            if (end != null) {
+                rua = end.getRua() == null ? "" : end.getRua();
+                numero = end.getNumero() == null ? 0 : end.getNumero();
+                cidade = end.getCidade() == null ? "" : end.getCidade();
+            }
+
+            String linha = String.format(
+                    "Nome: %s | Sexo: %s | Idade: %.2f | Peso: %.2f | Raça: %s | Endereço: %s, %d - %s",
+                    nome,
+                    sexo,
+                    idade,
+                    peso,
+                    raca,
+                    rua,
+                    numero,
+                    cidade
+            );
+
+            System.out.println((i + 1) + ". " + linha);
+        }
+    }
+
+    public static String unaccent(String src) {
+        return Normalizer
+                .normalize(src, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
+    }
+
 
     public Integer criterioBusca() {
 
@@ -357,7 +1118,6 @@ public class PetService {
                     try {
                         TipoPet tipo = TipoPet.valueOf(resposta.trim().toUpperCase());
                         pet.setTipoPet(tipo);
-                        break;
 
                     } catch (IllegalArgumentException e) {
                         System.err.println("Tipo de pet inválido");
@@ -365,54 +1125,57 @@ public class PetService {
                     break;
 
                 case "3":
-                    // sexo
+                    try {
+                        TipoSexo sexoPet = TipoSexo.valueOf(resposta.trim().toUpperCase());
+                        pet.setTipoSexo(sexoPet);
+
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Sexo do pet inválido");
+                    }
                     break;
 
                 case "4":
-                    // endereço (tudo em uma linha!)
+                    String[] partesEndereco =  resposta.split("\\s*,\\s*"); //isso é uma array de string
+
+                    if(partesEndereco.length != 3) {
+                        continue;
+                    }
+
+                    Endereco end = new Endereco();
+
+                    end.setRua(partesEndereco[0]);
+                    end.setNumero(Integer.parseInt(partesEndereco[1]));
+                    end.setCidade(partesEndereco[2]);
+
+                    pet.setEndereco(end);
                     break;
 
                 case "5":
-                    // idade
+                    pet.setIdade(Double.parseDouble(resposta));
                     break;
 
                 case "6":
-                    // peso
+                    pet.setPeso(Double.parseDouble(resposta));
                     break;
 
                 case "7":
-                    // raça
+                    pet.setRaca(resposta);
                     break;
             }
         }
 
         return pet;
     }
-}
 
- /* String raizProjeto = System.getProperty("user.dir");
-        File folder = new File(raizProjeto,"petsCadastrados");
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader();
-            String line;
-            while((line = reader.readLine()) != null) {
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    //PASSO 6
+
+    public void alterarPets() throws IOException {
+
+        List<Pet> listaEncontrada = buscarPets();
+        if(listaEncontrada != null) {
+
         }
 
+    }
+}
 
-        while (true) {
-                        try {
-                            TipoPet tipo = TipoPet.valueOf(resposta.trim().toUpperCase());
-                            pet.setTipoPet(tipo);
-                            break;
-
-                        } catch (IllegalArgumentException e) {
-                            System.err.println("Tipo de pet inválido digite novamente");
-                        }
-                    }*/
-// 2. Extrair cada campo
-// 3. Converter tipos (enum, inteiro, double)
-// 4. Criar Pet e retornar

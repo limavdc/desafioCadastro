@@ -6,6 +6,7 @@ import entities.PetService;
 
 
 import javax.swing.*;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -52,8 +53,16 @@ public class Main {
                     }
                     break;
                 case 2:
-                    System.out.println("Alterar os dados do pet");
-                   // Pet alterarPet = petService.buscarPets();
+                    System.out.println("=== Buscar Pet Cadastrado ===");
+
+                    System.out.println("Selecione o tipo do pet: ");
+
+                    try {
+                        petService.buscarPets(); // ele já imprime tudo lá dentro
+                    } catch (Exception e) {
+                        System.err.println("Erro ao buscar pets: " + e.getMessage());
+                    }
+
                     break;
                 case 3:
                     System.out.println("Qual tipo do pet");
