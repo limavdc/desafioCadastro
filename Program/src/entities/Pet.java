@@ -12,6 +12,7 @@ public class Pet {
     private Double peso;
     private Double idade;
     private String raca;
+    private String nomeArquivo;
     public static final String NAO_INFORMADO = "NÃO INFORMADO";
 
 
@@ -21,7 +22,7 @@ public class Pet {
     public Pet () {
     }
 
-    public Pet(String name, TipoPet tipoPet, TipoSexo tipoSexo, Double peso, Double idade, String raca, Endereco endereco) {
+    public Pet(String name, TipoPet tipoPet, TipoSexo tipoSexo, Double peso, Double idade, String raca, Endereco endereco, String nomeArquivo) {
         this.name = name;
         this.tipoPet = tipoPet;
         this.tipoSexo = tipoSexo;
@@ -29,6 +30,7 @@ public class Pet {
         this.idade = idade;
         this.raca = raca;
         this.endereco = endereco;
+        this.nomeArquivo = nomeArquivo;
     }
 
     public String getName() {
@@ -85,6 +87,14 @@ public class Pet {
 
     public void setEndereco(Endereco endereco) {
         this.endereco = endereco;
+    }
+
+    public String getNomeArquivo() {
+        return nomeArquivo;
+    }
+
+    public void setNomeArquivo(String nomeArquivo) {
+        this.nomeArquivo = nomeArquivo;
     }
 
     @Override

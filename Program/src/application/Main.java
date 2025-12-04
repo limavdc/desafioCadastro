@@ -53,17 +53,18 @@ public class Main {
                     }
                     break;
                 case 2:
-                    System.out.println("=== Buscar Pet Cadastrado ===");
+                    System.out.println("Alterar Pet Cadastrado");
 
                     System.out.println("Selecione o tipo do pet: ");
 
                     try {
-                        petService.buscarPets(); // ele já imprime tudo lá dentro
+                        petService.alterarPets(); // ele já imprime tudo lá dentro
                     } catch (Exception e) {
                         System.err.println("Erro ao buscar pets: " + e.getMessage());
                     }
 
                     break;
+
                 case 3:
                     System.out.println("Qual tipo do pet");
                     break;
@@ -87,16 +88,5 @@ public class Main {
         sc.close();
     }
 
-    public static boolean validarTexto(String nome) {
-        if (nome == null) return false;
-        nome = nome.trim();
-        return nome.matches("^[A-Za-zÀ-ÿ]+(?:[ '-][A-Za-zÀ-ÿ]+)*$");
-    }
-
-    public static boolean validarTextoRaca(String raca) {
-        if (raca == null) return false;
-        raca = raca.trim();
-        return raca.matches("^[A-Za-zÀ-ÿ]+(?:[ '-][A-Za-zÀ-ÿ]+)*$");
-    }
 
 }
